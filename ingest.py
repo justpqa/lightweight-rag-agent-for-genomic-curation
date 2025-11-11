@@ -33,18 +33,21 @@ def clean_document(document: Document) -> Document:
     cleaned_document = Document(page_content=cleaned_text, metadata=document.metadata)
     return cleaned_document
 
-def ingest_corpus(chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME) -> None:
+def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_DB_PATH,
+                  chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME, 
+                  embedding_model_name: str = EMBEDDING_MODEL_NAME,
+                  chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP) -> None:
     # load documents from corpus
     print("Loading documents from corpus...")    
     documents = []
     metadata = [] # store a list of metadata dictionaries, currenly only have filenames
-    for filename in os.listdir(CORPUS_PATH):
+    for filename in os.listdir(corpus_path):
         if filename.endswith(".txt"):
-            with open(os.path.join(CORPUS_PATH, filename), 'r', encoding='utf-8') as f:
+            with open(os.path.join(corpus_path, filename), 'r', encoding='utf-8') as f:
                 documents.append(f.read())
                 metadata.append({"filename": filename})
         elif filename.endswith(".pdf"):
-            pdf_path = os.path.join(CORPUS_PATH, filename)
+            pdf_path = os.path.join(corpus_path, filename)
             with fitz.open(pdf_path) as doc:
                 text = ""
                 for page in doc:
@@ -57,8 +60,8 @@ def ingest_corpus(chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME) ->
     # split documents into chunks
     print("Splitting documents into chunks...")
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE, 
-        chunk_overlap=CHUNK_OVERLAP,
+        chunk_size=chunk_size, 
+        chunk_overlap=chunk_overlap,
         separators=["\n\n", "\n", " ", ""]
     )
     splitted_documents = text_splitter.create_documents(texts=documents, metadatas=metadata)
@@ -69,8 +72,8 @@ def ingest_corpus(chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME) ->
     # create Chroma vector store
     print("Creating Chroma vector store...")
     chroma_db = Chroma(
-        persist_directory=CHROMA_DB_PATH,
-        embedding_function=HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME),
+        persist_directory=chroma_db_path,
+        embedding_function=HuggingFaceEmbeddings(model_name=embedding_model_name),
         collection_name=chroma_db_collection_name
     )
     # delete current collection contents before adding new documents
