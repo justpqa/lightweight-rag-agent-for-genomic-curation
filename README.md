@@ -88,7 +88,7 @@ department of neural development and disease, korea brain research institute, da
 
 ## 📊 Evaluation and analysis
 
-I have test 4 different configurations of (chunk_size, top_k, top_k_rerank) across 10 different questions in queries.jsonl and the results are as follow:
+I have test 4 different configurations of (chunk_size, top_k, top_k_rerank) across 10 different questions in queries.jsonl and the results are as follow (here, I measured based on question-answer cosine similarity, as well as max/min similarity of citation with answer (to make sure if answer aligned with citation)):
 
 | chunk_size | top_k | top_k_rerank | question_answer_similarity | citation_answer_max_similarity | citation_answer_min_similarity |
 |------------|--------------|----------|------------|--------------|----------|
@@ -96,6 +96,8 @@ I have test 4 different configurations of (chunk_size, top_k, top_k_rerank) acro
 | 500 | 50 | 5 | 0.790218 | 0.834320 | 0.517048 | 
 | 500 | 50 | 10 | 0.778366 | 0.812251 | 0.520168 | 
 | 1000 | 20 | 5 | 0.777831	 | 0.783236 | 0.539775 | 
+
+=> A good amount of top_k and top_k_rerank but not too much would work well in many cases.
 
 Some example score on best configuration (only show first 5 questions)
 | chunk_size | top_k | top_k_rerank | query | answer |
