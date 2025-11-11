@@ -105,3 +105,8 @@ Some example score on best configuration (only show first 5 questions)
 ## 💰 Cost & Efficiency Notes
 
 - With our current model choice and everything can be handled and download to used locally, the cost of our RAG pipeline is 0
+
+## 💡 Future direction
+
+- Incorporate separate pipeline for automated download of corpus of papers => allow easier extraction of richer metadata
+- Experiments with different models (with a high focus on lightweight model, especially sub-1B model on LLM) and configuration of generation
