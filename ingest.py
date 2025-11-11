@@ -1,16 +1,18 @@
+import os
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import fitz
-import os
 import re
 from dotenv import load_dotenv
 load_dotenv()
+import warnings
+warnings.filterwarnings("ignore")
 
 CORPUS_PATH = os.getenv("CORPUS_PATH", "./corpus")
-CHROMA_DB_COLLECTION_NAME = os.getenv("CHROMA_DB_COLLECTION_NAME", "genomic_curation_collection")
 CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", "./chroma_db")
+CHROMA_DB_COLLECTION_NAME = os.getenv("CHROMA_DB_COLLECTION_NAME", "genomic_curation_collection")
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 500))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 50))
@@ -86,3 +88,15 @@ def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_D
     chroma_db.add_documents(splitted_documents)
     print("Finished creating Chroma vector store.")
     print()
+
+def verify_db_existence(chroma_db_path: str = CHROMA_DB_PATH,
+                        chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME) -> bool:
+    chroma_db = Chroma(
+        persist_directory=chroma_db_path,
+        embedding_function=HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME),
+        collection_name=chroma_db_collection_name
+    )
+    collection = chroma_db._collection
+    all_docs = collection.get(include=[])
+    all_ids = all_docs["ids"]
+    return len(all_ids) > 0
