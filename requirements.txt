@@ -10,3 +10,6 @@ transformers
 matplotlib
 scikit-learn
 seaborn
+ipykernel
+tqdm
+pandas

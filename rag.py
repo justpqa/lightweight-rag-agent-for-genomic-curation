@@ -26,46 +26,55 @@ class RAG:
                  embedding_model_name: str = EMBEDDING_MODEL_NAME, reranker_model_name: str = RERANKER_MODEL_NAME, 
                  llm_model_name: str = LLM_MODEL_NAME, prompt_template_path: str = PROMPT_TEMPLATE_PATH, 
                  num_trials: int = NUM_TRIALS, top_k: int = TOP_K, top_k_rerank: int = TOP_K_RERANK, 
-                 similarity_score_threshold: float = SIMILARITY_SCORE_THRESHOLD, 
-                 temperature: float = TEMPERATURE, max_tokens: Optional[int] = MAX_TOKENS):
-        print("Initializing RAG system...") 
-        print()
+                 similarity_score_threshold: float = SIMILARITY_SCORE_THRESHOLD, temperature: float = TEMPERATURE, 
+                 max_tokens: Optional[int] = MAX_TOKENS, print_progress: bool = True) -> None:
+        if print_progress:
+            print("Initializing RAG system...") 
+            print()
 
         # vector store
-        print("Loading vector store...")
+        if print_progress:
+            print("Loading vector store...")
         self.vector_store = Chroma(
             persist_directory=chroma_db_path,
             embedding_function=HuggingFaceEmbeddings(model_name=embedding_model_name),
             collection_name=chroma_db_collection_name
         )
-        print("Finished loading vector store.")
-        print()
+        if print_progress:
+            print("Finished loading vector store.")
+            print()
 
         # LLM
         # we will use primaritly CPU for LLM inference, 
         # adjust as needed by changing to device = 0, 1, etc. for GPU, -1 for CPU
-        print("Loading LLM...")
+        if print_progress:
+            print("Loading LLM...")
         self.tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
         self.model = AutoModelForCausalLM.from_pretrained(llm_model_name)
         self.model.eval()
-        print("Finished loading LLM.")
-        print()
+        if print_progress:
+            print("Finished loading LLM.")
+            print()
 
-        print("Loading reranker model...")
+        if print_progress:
+            print("Loading reranker model...")
         self.reranker_model = CrossEncoder(
             model_name_or_path=reranker_model_name, 
             device="cpu"
         )
-        print("Finished loading reranker model.")
-        print()
+        if print_progress:
+            print("Finished loading reranker model.")
+            print()
 
         # load prompt template
-        print("Loading prompt template...")
+        if print_progress:
+            print("Loading prompt template...")
         self.prompt_template = ""
         with open(prompt_template_path, 'r') as f:
             self.prompt_template = f.read()
-        print("Finished loading prompt template.")
-        print()
+        if print_progress:
+            print("Finished loading prompt template.")
+            print()
 
         # params for retrieval
         self.num_trials = num_trials
@@ -75,7 +84,8 @@ class RAG:
         self.max_tokens = max_tokens
         self.temparature = temperature
 
-        print("RAG system initialized.")
+        if print_progress:
+            print("RAG system initialized.")
 
     def retrieve(self, query: str) -> List[Document]:
         """Retrieve relevant documents from the vector store."""
@@ -118,7 +128,7 @@ class RAG:
         formatted_answer = f"{answer}\n\nSources:\n{formatted_citations}"
         return formatted_answer
 
-    def answer(self, query: str) -> str:
+    def answer(self, query: str, with_citation: bool = True) -> str:
         """Generate an answer based on the retrieved documents and the query."""
         # Retrieve
         retrieved_docs = []
@@ -139,5 +149,6 @@ class RAG:
             citations=citations
         )
         response = self.generate(prompt)
-        formatted_response = self.format_answer_with_citations(response, reranked_retrived_docs)
-        return formatted_response
+        if with_citation:
+            response = self.format_answer_with_citations(response, reranked_retrived_docs)
+        return response

@@ -1,4 +1,5 @@
 .DS_Store
 venv/
 chroma_db/*
+test_chroma_db/*
 details.md

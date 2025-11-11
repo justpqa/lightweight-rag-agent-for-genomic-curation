@@ -38,9 +38,10 @@ def clean_document(document: Document) -> Document:
 def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_DB_PATH,
                   chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME, 
                   embedding_model_name: str = EMBEDDING_MODEL_NAME,
-                  chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP) -> None:
+                  chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP, print_progress: bool = True) -> None:
     # load documents from corpus
-    print("Loading documents from corpus...")    
+    if print_progress:
+        print("Loading documents from corpus...")    
     documents = []
     metadata = [] # store a list of metadata dictionaries, currenly only have filenames
     for filename in os.listdir(corpus_path):
@@ -56,11 +57,13 @@ def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_D
                     text += page.get_text() + "\n\n" # special indicator of pages
                 documents.append(text)
                 metadata.append({"filename": filename})
-    print(f"Finished loading {len(documents)} documents.")
-    print()
+    if print_progress:
+        print(f"Finished loading {len(documents)} documents.")
+        print()
 
     # split documents into chunks
-    print("Splitting documents into chunks...")
+    if print_progress:
+        print("Splitting documents into chunks...")
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size, 
         chunk_overlap=chunk_overlap,
@@ -68,11 +71,13 @@ def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_D
     )
     splitted_documents = text_splitter.create_documents(texts=documents, metadatas=metadata)
     splitted_documents = [clean_document(doc) for doc in splitted_documents]
-    print(f"Finished splitting to make {len(splitted_documents)} chunks.")
-    print()
+    if print_progress:
+        print(f"Finished splitting to make {len(splitted_documents)} chunks.")
+        print()
 
     # create Chroma vector store
-    print("Creating Chroma vector store...")
+    if print_progress:
+        print("Creating Chroma vector store...")
     chroma_db = Chroma(
         persist_directory=chroma_db_path,
         embedding_function=HuggingFaceEmbeddings(model_name=embedding_model_name),
@@ -86,8 +91,9 @@ def ingest_corpus(corpus_path: str = CORPUS_PATH, chroma_db_path: str = CHROMA_D
         collection.delete(ids=all_ids)
     # add documents to Chroma vector store
     chroma_db.add_documents(splitted_documents)
-    print("Finished creating Chroma vector store.")
-    print()
+    if print_progress:
+        print("Finished creating Chroma vector store.")
+        print()
 
 def verify_db_existence(chroma_db_path: str = CHROMA_DB_PATH,
                         chroma_db_collection_name: str = CHROMA_DB_COLLECTION_NAME) -> bool:
