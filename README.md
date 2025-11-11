@@ -36,7 +36,11 @@ python3 main.py
 ```
 
 (or python or py depends on your python version)
-Note that chroma_db folder should not be deleted since it will hold the vector database for the RAG application, and the corpus folder should not be deleted since it will hold the corpus of documents (but you can also add new documents into this and when we run the application, you can choose option 1 to reindexing the vector db). In addition to this, for the first use, it will download several models (which should take at most 1GB for all 3 models, and you can update models in .env if you prefer more lightweight models)
+Note: 
+
+- chroma_db folder should not be deleted since it will hold the vector database for the RAG application
+- corpus folder should not be deleted since it will hold the corpus of documents (but you can also add new documents into this and when we run the application, you can choose option 1 to reindexing the vector db). 
+- In addition to this, for the first use, it will download several models (which should take at most 1GB for all 3 models, and you can update models in `.env` if you prefer more lightweight models). => you can also download models from HuggingFace to local machine and change the path of model in `.env` into the folder path
 
 ## 🧩 Model + embedding choices
 
